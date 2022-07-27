@@ -10,17 +10,19 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+import re
 
-url = "https://shop.lululemon.com/c/men/_/N-7qr"
+#url = "https://shop.lululemon.com/c/men/_/N-7qr"
+url = "https://shop.lululemon.com/c/women/_/N-7z5"
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 #driver.get("https://www.google.com")
 driver.get(url)
-
 
 #get scroll height
 last_height = driver.execute_script("return document.body.scrollHeight")
 
 y = 50
+b = 0
 scroll_pause_time = 0.1
 while True:
     while True:
@@ -38,20 +40,22 @@ while True:
         y = y + 100
     y = y-1500
     try:
+        if b == y:
+            break
+        b = y
         loadMoreButton = driver.find_element(By.CSS_SELECTOR, 'div.iconButtonContent-29UhU')
         time.sleep(2)
     except:
         break
     else:
+        time.sleep(0.5)
         loadMoreButton.click()
-
 
 html = driver.page_source
 #session_obj = requests.Session()
 #response = session_obj.get(url, headers={"User-Agent": "Mozilla/5.0"}) #I don't know if this will be useful later
 #soup = BeautifulSoup(response.content,'html.parser')
 soup = BeautifulSoup(html, "html.parser")
-
 
 #things to find
 ####################
@@ -62,6 +66,7 @@ item_names = []
 for items in item_tiles:
     item_names.append(items.contents[0])
 print(item_names)
+print('# of items = ' ,len(item_names))
 ###
 
 ###item links
@@ -69,28 +74,37 @@ item_links = []
 for items in item_tiles:
     item_links.append(url+items.attrs['href'])
 print(item_links)
+print('# of links = ' ,len(item_links))
 ###
 
 ###item prices
+temp = []
 item_prices_container = soup.findAll('span',class_='price-1jnQj price')
 item_prices = []
 for items in item_prices_container:
     price_box = items.contents[0].contents
-    if len(price_box) > 1:
+    try:
+        a = str(items.contents[0].contents[1])
+    except:
+        a = "error"
+    if len(price_box) > 1 and a =='<span aria-label="to"> - </span>':
         combined = price_box[0]+"-"+price_box[2]
         item_prices.append(combined)
     #item_prices.append(price_box[0]+price_box[2])
-    if price_box[0] == 'Sale Price\xa0':
-        sale_box = items.contents[2].contents
-        item_prices.append(sale_box)
+    elif price_box[0] == 'Sale Price\xa0':
+        sale_box = items.contents#.contents
+        item_prices.append(re.findall(r'[$]\d+',str(items.contents[1]))[0] + '<' + re.findall(r'[$]\d+',str(items.contents[3]))[0])
     else:
         item_prices.append(price_box[0])
 print(item_prices)
+print('# of prices = ' ,len(item_prices))
 ####################
-
-
-
+pd.set_option('display.max_columns', None)
 """print(soup.find('product-tile-image').attrs['base'])"""
+df = pd.DataFrame()
+df['Name'] = item_names
+df['Price'] = item_prices
+df['Links'] = item_links
 
-
+print(df)
 #print(response.status_code)
