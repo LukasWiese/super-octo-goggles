@@ -12,8 +12,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 import re
 
-#url = "https://shop.lululemon.com/c/men/_/N-7qr"
-url = "https://shop.lululemon.com/c/women/_/N-7z5"
+url = "https://shop.lululemon.com/c/men/_/N-7qr"
+#url = "https://shop.lululemon.com/c/women/_/N-7z5"
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 #driver.get("https://www.google.com")
 driver.get(url)
@@ -69,12 +69,16 @@ print(item_names)
 print('# of items = ' ,len(item_names))
 ###
 
-###item links
-item_links = []
-for items in item_tiles:
-    item_links.append(url+items.attrs['href'])
-print(item_links)
-print('# of links = ' ,len(item_links))
+###item pics
+"""
+item_pics = []
+#item_pictures = re.findall("(srcset=\".+\s320w)",str(soup.findAll('span', class_='lazyImageContainer-2KFMN')[0].contents))[0][7:-4]
+item_pictures = soup.findAll('span', class_='lazyImageContainer-2KFMN')
+
+for items in item_pictures:
+    item_pics.append('0')
+print('# of pics = ' ,len(item_pics))
+"""
 ###
 
 ###item prices
@@ -99,12 +103,36 @@ for items in item_prices_container:
 print(item_prices)
 print('# of prices = ' ,len(item_prices))
 ####################
+
+###Item availablility
+links = []
+item_link_container = soup.findAll('a',class_='link product-tile__image-link')
+
+for items in item_link_container:
+    links.append(url[:-14] + items.attrs['href'])
+
+print(links)
+print('# of links = ' ,len(links))
+####################
+
+###Item type
+types = []
+item_type_container = soup.findAll('a',class_='link product-tile__image-link')
+
+for items in item_type_container:
+    types.append(items.attrs['data-categoryunifiedid'])
+
+print(types)
+print('# of types = ' ,len(types))
+####################
+
 pd.set_option('display.max_columns', None)
 """print(soup.find('product-tile-image').attrs['base'])"""
 df = pd.DataFrame()
 df['Name'] = item_names
 df['Price'] = item_prices
-df['Links'] = item_links
+df['Links'] = links
+df['Types'] = types
 
 print(df)
 #print(response.status_code)
