@@ -70,15 +70,35 @@ print('# of items = ' ,len(item_names))
 ###
 
 ###item pics
-"""
-item_pics = []
-#item_pictures = re.findall("(srcset=\".+\s320w)",str(soup.findAll('span', class_='lazyImageContainer-2KFMN')[0].contents))[0][7:-4]
-item_pictures = soup.findAll('span', class_='lazyImageContainer-2KFMN')
 
-for items in item_pictures:
-    item_pics.append('0')
+item_pics = []
+item_pic_test = []
+#item_pictures = re.findall("(srcset=\".+\s320w)",str(soup.findAll('span', class_='lazyImageContainer-2KFMN')))#[0].contents))[0][7:-4]
+#item_pictures = soup.findAll('span',class_='lazyImageContainer-2KFMN')
+item_pictures = re.findall("(https:\/\/images\.lululemon\.com\/is\/image\/lululemon\/.{13,16}[?])",str(soup.findAll('span',class_='lazyImageContainer-2KFMN')))
+last = 0
+uniquer = set()
+for things in item_pictures:
+    if things in uniquer:
+        pass
+    else:
+            item_pics.append(things)
+    uniquer.add(things)
+
+print(uniquer)
+print(item_pics)
+
+"""    if items != last or items in item_pics == False:
+        if items[-2] == '1':
+            item_pics.append(items)
+            last = items
+        else:
+            pass
+    else:
+        pass"""
+
 print('# of pics = ' ,len(item_pics))
-"""
+
 ###
 
 ###item prices
@@ -104,7 +124,7 @@ print(item_prices)
 print('# of prices = ' ,len(item_prices))
 ####################
 
-###Item availablility
+###Item link
 links = []
 item_link_container = soup.findAll('a',class_='link product-tile__image-link')
 
@@ -133,6 +153,6 @@ df['Name'] = item_names
 df['Price'] = item_prices
 df['Links'] = links
 df['Types'] = types
-
+df['Pictures'] = item_pics
 print(df)
 #print(response.status_code)
